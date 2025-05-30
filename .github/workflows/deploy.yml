@@ -15,21 +15,27 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
+    # ✅ Step 1: Authenticate using SA Key
+    - name: Authenticate with Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: '${{ secrets.GKE_SA_KEY }}'
+
+    # ✅ Step 2: Set up Google Cloud CLI (optional but helpful for gcloud use)
     - name: Set up Google Cloud SDK
       uses: google-github-actions/setup-gcloud@v1
       with:
         project_id: ${{ secrets.GKE_PROJECT }}
-        service_account_key: ${{ secrets.GKE_SA_KEY }}
-        export_default_credentials: true
 
-    - name: Authenticate with GKE
+    # ✅ Step 3: Get GKE credentials
+    - name: Get GKE Credentials
       uses: google-github-actions/get-gke-credentials@v1
       with:
         cluster_name: ${{ secrets.GKE_CLUSTER }}
         location: ${{ secrets.GKE_ZONE }}
         project_id: ${{ secrets.GKE_PROJECT }}
 
-
+    # ✅ Step 4: Apply Kubernetes YAML files
     - name: Apply All K8s Resources
       run: |
         kubectl apply -f k8s/
