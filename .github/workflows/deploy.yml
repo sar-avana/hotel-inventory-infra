@@ -1,0 +1,41 @@
+name: Deploy Infra to GKE
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy:
+    name: Apply Infra K8s Resources
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # ✅ Step 1: Authenticate using SA Key
+    - name: Authenticate with Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: '${{ secrets.GKE_SA_KEY }}'
+
+    # ✅ Step 2: Set up Google Cloud CLI (optional but helpful for gcloud use)
+    - name: Set up Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        project_id: ${{ secrets.GKE_PROJECT }}
+
+    # ✅ Step 3: Get GKE credentials
+    - name: Get GKE Credentials
+      uses: google-github-actions/get-gke-credentials@v1
+      with:
+        cluster_name: ${{ secrets.GKE_CLUSTER }}
+        location: ${{ secrets.GKE_ZONE }}
+        project_id: ${{ secrets.GKE_PROJECT }}
+
+    # ✅ Step 4: Apply Kubernetes YAML files
+    - name: Apply All K8s Resources
+      run: |
+        find k8s/ -type f \( -name "*.yaml" -o -name "*.yml" -o -name "*.json" \) ! -path "k8s/postgres/prod/*" -exec kubectl apply -f {} \;
+
