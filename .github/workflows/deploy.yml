@@ -3,7 +3,6 @@ name: Deploy Infra to GKE
 on:
   push:
     branches:
-      - main
       - develop
 
 jobs:
